@@ -1,88 +1,108 @@
-Part 1: Frontend README
-ClickUp Clone UI
-
-Role: Frontend Developer
-
-Framework: React with Redux Toolkit
-1. Installation & Dependencies
-
-The following libraries are required for the project. Run these commands in order:
-
-# UI Framework and Routing
-npm install react-bootstrap react-router-dom react-router-bootstrap
-
-# Data Fetching
-npm install axios
-
-# Global State Management
-npm install redux react-redux redux-thunk @reduxjs/toolkit @redux-devtools/extension
-
-2. Technical Implementation details
-Global State (Redux Toolkit)
-
-We use Redux to handle user authentication and RBAC.
-
-    Slices: Managed via @reduxjs/toolkit.
-
-    Async Logic: redux-thunk handles the API calls to the backend.
-
-    Debugging: @redux-devtools/extension is enabled for state tracking.
-
-Routing & UI
-
-    Bootstrap Integration: react-bootstrap provides the Table and Accordion components for the Dashboard.
-
-    Navigation: react-router-bootstrap ensures that Navbar links don't trigger a full page reload, maintaining the Redux state.
-
-    API Client: axios is used for all requests. Use a central api.js file to attach the JWT token from Redux to the Authorization headers.
-
-3. Screen logic requirements
-
-    Dashboard: Project rows must be Accordions.
-
-    Role-Based Filtering:
-
-        Project Create: Filter user dropdown for Manager role only.
-
-        Task Create: Filter user dropdown based on whether an Admin or Manager is logged in.
-
-    User Management: Access restricted to Admin role only for creating and viewing users.
-
-Part 2: Backend README
-ClickUp Clone API
+Part 1: Backend README (README.md for the Backend Repo)
+ClickUp Replacement - Backend API
 
 Role: Backend Developer
 
-Status: Core Project Management API (Quiz 4)
-1. Setup Instructions
+Repository: git@gitlab.com:Mo.emam/clickup.git
+1. Getting Started & Installation
 
-    Environment: Create and activate a virtual environment.
+Follow these steps to set up the backend environment:
 
-    Installation: ```bash pip install django djangorestframework djangorestframework-simplejwt django-cors-headers
+    Clone the Repository:
+    Bash
 
-    Database: ```bash python manage.py makemigrations python manage.py migrate
+git clone git@gitlab.com:Mo.emam/clickup.git
+cd clickup
 
-    Superuser: Create an admin account to start registering colleagues.
+Environment Setup:
+Bash
 
-2. API Endpoints (Testing via Postman)
+# Create virtual environment
+python -m venv venv
 
-All endpoints are prefixed with /api/v1.
-Authentication
+# Activate environment
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
 
-    POST /token/: Use username and password. Returns access and refresh tokens.
+Install Dependencies:
+Bash
 
-    Header Requirement: For all protected routes, use Authorization: Bearer <access_token>.
+pip install django djangorestframework djangorestframework-simplejwt django-cors-headers
+# Or if requirements.txt is present:
+pip install -r requirements.txt
 
-Project & Task Logic
+Database & Admin Setup:
+Bash
 
-    GET /projects/: Returns projects based on role. (Admins: All, Others: Assigned).
+    python manage.py makemigrations
+    python manage.py migrate
+    python manage.py createsuperuser
 
-    POST /projects/create/: (Admin Only). logic handles status (CREATED vs IN PROGRESS) based on the start_date.
+2. API Endpoints & Postman Testing
 
-    POST /projects/<id>/task/create/: (Admin/Manager).
+Base URL: /api/v1
 
-3. Automated Signals
+Auth: Use Authorization: Bearer <access_token> in headers.
+Endpoint	Method	Permission	Description
+/token/	POST	Public	Get Access/Refresh tokens
+/users/	GET	Admin	List all colleagues
+/users/create/	POST	Admin	Register new colleagues (No Dummy Data)
+/projects/	GET	All	View projects based on RBAC
+/projects/create/	POST	Admin	Create project (Status logic applied)
+/projects/<id>/task/create/	POST	Admin/Manager	Create task for specific project
+3. Business Logic (Signals)
 
-    Total Hours Calculation: When a task is marked COMPLETED, a signal calculates hours_consumed based on the duration between start_date and the completion date.
+    Task Completion: Hours are calculated from start_date to the actual completion date.
 
-    Project Roll-up: A secondary signal triggers to update the total hours_consumed of the parent project whenever a task is finished.
+    Project Aggregation: Every task update triggers a signal that recalculates the total hours_consumed for the parent project.
+
+Part 2: Frontend README (README.md for the Frontend Repo)
+ClickUp Replacement - Frontend UI
+
+Role: Frontend Developer
+
+Repository: https://github.com/ndmYumul/DATASTALGO-Quiz-4.git
+1. Getting Started & Installation
+
+Follow these steps to set up the React environment:
+
+    Clone the Repository:
+    Bash
+
+git clone https://github.com/ndmYumul/DATASTALGO-Quiz-4.git
+cd DATASTALGO-Quiz-4
+
+Install Required Dependencies:
+Bash
+
+# UI and Routing
+npm install react-bootstrap react-router-dom react-router-bootstrap
+
+# API Client
+npm install axios
+
+# Redux State Management
+npm install redux react-redux redux-thunk @reduxjs/toolkit @redux-devtools/extension
+
+Run Application:
+Bash
+
+    npm start
+
+2. Technical Stack Details
+
+    State Management: Redux Toolkit is used for global RBAC and Auth state.
+
+    UI Components: React-Bootstrap (Accordions used for Dashboard rows).
+
+    API Integration: Axios with interceptors for SimpleJWT handling.
+
+3. RBAC Requirements
+
+    Admin: Full access to User List, User Creation, and Project Creation.
+
+    Manager: Can see assigned projects and create tasks (can only assign tasks to 'User' roles).
+
+    User: Can see assigned projects and tasks only; no creation permissions.
