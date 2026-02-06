@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+Part 1: Frontend README
+ClickUp Clone UI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Role: Frontend Developer
 
-## Available Scripts
+Framework: React with Redux Toolkit
+1. Installation & Dependencies
 
-In the project directory, you can run:
+The following libraries are required for the project. Run these commands in order:
 
-### `npm start`
+# UI Framework and Routing
+npm install react-bootstrap react-router-dom react-router-bootstrap
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+# Data Fetching
+npm install axios
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# Global State Management
+npm install redux react-redux redux-thunk @reduxjs/toolkit @redux-devtools/extension
 
-### `npm test`
+2. Technical Implementation details
+Global State (Redux Toolkit)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+We use Redux to handle user authentication and RBAC.
 
-### `npm run build`
+    Slices: Managed via @reduxjs/toolkit.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    Async Logic: redux-thunk handles the API calls to the backend.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    Debugging: @redux-devtools/extension is enabled for state tracking.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Routing & UI
 
-### `npm run eject`
+    Bootstrap Integration: react-bootstrap provides the Table and Accordion components for the Dashboard.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+    Navigation: react-router-bootstrap ensures that Navbar links don't trigger a full page reload, maintaining the Redux state.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    API Client: axios is used for all requests. Use a central api.js file to attach the JWT token from Redux to the Authorization headers.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. Screen logic requirements
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+    Dashboard: Project rows must be Accordions.
 
-## Learn More
+    Role-Based Filtering:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+        Project Create: Filter user dropdown for Manager role only.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+        Task Create: Filter user dropdown based on whether an Admin or Manager is logged in.
 
-### Code Splitting
+    User Management: Access restricted to Admin role only for creating and viewing users.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Part 2: Backend README
+ClickUp Clone API
 
-### Analyzing the Bundle Size
+Role: Backend Developer
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Status: Core Project Management API (Quiz 4)
+1. Setup Instructions
 
-### Making a Progressive Web App
+    Environment: Create and activate a virtual environment.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+    Installation: ```bash pip install django djangorestframework djangorestframework-simplejwt django-cors-headers
 
-### Advanced Configuration
+    Database: ```bash python manage.py makemigrations python manage.py migrate
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+    Superuser: Create an admin account to start registering colleagues.
 
-### Deployment
+2. API Endpoints (Testing via Postman)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+All endpoints are prefixed with /api/v1.
+Authentication
 
-### `npm run build` fails to minify
+    POST /token/: Use username and password. Returns access and refresh tokens.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+    Header Requirement: For all protected routes, use Authorization: Bearer <access_token>.
+
+Project & Task Logic
+
+    GET /projects/: Returns projects based on role. (Admins: All, Others: Assigned).
+
+    POST /projects/create/: (Admin Only). logic handles status (CREATED vs IN PROGRESS) based on the start_date.
+
+    POST /projects/<id>/task/create/: (Admin/Manager).
+
+3. Automated Signals
+
+    Total Hours Calculation: When a task is marked COMPLETED, a signal calculates hours_consumed based on the duration between start_date and the completion date.
+
+    Project Roll-up: A secondary signal triggers to update the total hours_consumed of the parent project whenever a task is finished.
